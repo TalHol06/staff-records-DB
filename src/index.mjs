@@ -46,6 +46,85 @@ async function selectTable(tableName){
   promptUser();
 }
 
+async function addNew(tableName){
+  try{
+    if (tableName === "Department"){
+      const answer = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'departmentName',
+          message: 'Enter the name of the department you want to add.'
+        }
+      ]);
+      
+      const query = `
+        INSERT INTO Department (id, name) 
+        VALUES((SELECT COALESCE(MAX(id), 0) + 1 FROM Department), $1)
+      `;
+      await db.query(query, [answer.departmentName]);
+      console.log(`Successfully added the ${answer.departmentName} Department to the database!`);
+    } else if (tableName === "Role"){
+      const answer = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'roleName',
+          message: 'Enter the name of the role you want to add.'
+        },
+        {
+          type: 'input',
+          name: 'salary',
+          message: "Enter the role's salary."
+        },
+        {
+          type: 'input',
+          name: 'departmentId',
+          message: "Enter the role's department ID."
+        }
+      ]);
+
+      const query = `
+        INSERT INTO Role (id, name, salary, department)
+        VALUES ((SELECT COALESCE(MAX(id), 0) + 1 FROM Role), $1, $2, $3)
+      `;
+      await db.query(query, [answer.roleName, answer.salary, answer.departmentId]);
+      console.log(`Successfully added the ${answer.roleName} ROle to the database!`);
+    } else if (tableName === "Employee"){
+      const answer = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'fName',
+          message: "Enter your employee's first name."
+        },
+        {
+          type: 'input',
+          name: 'lName',
+          message: "Enter your employee's last name."
+        },
+        {
+          type: 'input',
+          name: 'roleId',
+          message: "Enter the employee's role id,"
+        },
+        {
+          type: 'input',
+          name: 'managerId',
+          message: "Enter the employee's manager id."
+        }
+      ]);
+
+      const query = `
+        INSERT INTO Employee (id, first_name, last_name, role_id, manager_id)
+        VALUES ((SELECT COALESCE(MAX(id), 0) + 1 FROM Employee), $1, $2, $3, $4)
+      `;
+      await db.query(query, [answer.fName, answer.lName, answer.roleId, answer.managerId]);
+      console.log(`Successfully added ${answer.fName} ${answer.lName} to the dataase!`);
+    }
+  } catch (err){
+    console.log(`Error adding value to the ${tableName} database: ` +err.message);
+  }
+  promptUser();
+}
+
 async function promptUser(){
   const answers = await inquirer.prompt([
     {
@@ -79,10 +158,13 @@ async function promptUser(){
     selectTable("Employee");
   } else if(answers.actions === "Add a department"){
     console.log(`Adding your department...`);
+    addNew("Department");
   } else if(answers.actions === "Add a role"){
     console.log(`Adding your role...`);
+    addNew("Role");
   } else if(answers.actions === "Add an employee"){
     console.log(`Adding your employee...`);
+    addNew("Employee");
   } else if(answers.actions === "Delete a department"){
     console.log(`Deleting your department...`);
   } else if(answers.actions === "Delete a role"){
@@ -93,5 +175,6 @@ async function promptUser(){
     console.log(`Updating your employee's role`);
   } else if(answers.actions === "Exit"){
     console.log(`Exiting prompt...`);
+    db.end();
   }
 }
