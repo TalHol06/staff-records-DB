@@ -125,6 +125,103 @@ async function addNew(tableName){
   promptUser();
 }
 
+// Prompts the user to delete a value from the choosen table
+async function deleteValueFrom(tableName){
+  try{
+    if (tableName === "Department"){
+      const table = `SELECT name FROM Department`;
+      const result = await db.query(table);
+      // Creates a new array of Department names
+      const options = result.rows.map(row => `${row.name}`);
+      const answer = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'department',
+          message: "What department would you like to remove?",
+          choices: options
+        }
+      ]);
+
+      const confirmation = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'answer',
+          message: `Are you sure you want to remove the ${answer.department} department from the database?`,
+          choices: ['Yes', 'No']
+        }
+      ]);
+
+      if (confirmation.answer === 'Yes'){
+        const query = `DELETE FROM Department WHERE name = $1`;
+        await db.query(query, [answer.department]);
+        console.log(`Department "${answer.department}" successfully from the database!`);
+      }
+    } else if (tableName === "Role"){
+      const table = `SELECT name FROM Role`;
+      const result = await db.query(table);
+      // Creates a new array of all role names
+      const options = result.rows.map(row => `${row.name}`);
+      const answer = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'role',
+          message: "What role would you like to remove?",
+          choices: options
+        }
+      ]);
+
+      const confirmation = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'answer',
+          message: `Are you sure you want to remove the ${answer.role} role from the database?`,
+          choices: ['Yes', 'No']
+        }
+      ]);
+
+      if (confirmation.answer === 'Yes'){
+        const query = `DELETE FROM Role WHERE name = $1`;
+        await db.query(query, [answer.role]);
+        console.log(`Role "${answer.role}" successfully removed from the database!`);
+      }
+    } else if (tableName === "Employee"){
+      const table = `SELECT first_name, last_name FROM Employee`;
+      const result = await db.query(table);
+      // Creates a new array of Employee first name's and last name's
+      const options = result.rows.map(row => `${row.first_name} ${row.last_name}`);
+      const answer = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'employee',
+          message: `Which employee would you like to remove from the database?`,
+          choices: options
+        }
+      ]);
+
+      const confirmation = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'answer',
+          message: `Are you sure you want to remove ${answer.employee} from the datbase`,
+          choices: ['Yes', 'No']
+        }
+      ]);
+
+      if (confirmation.answer === 'Yes'){
+        const [first_name, last_name] = answer.employee.split(' ');
+        const query = `DELETE FrOM Employee 
+        WHERE first_name = $1 AND last_name = $2
+        `;
+        await db.query(query, [first_name, last_name]);
+        console.log(`Employee ${answer.employee} successfully removed from the database!`);
+      }
+    }
+  } catch (err){
+    console.log(`Error removing from the ${tableName} table: ` +err.message);
+  }
+  promptUser();
+}
+
 async function promptUser(){
   const answers = await inquirer.prompt([
     {
@@ -167,10 +264,13 @@ async function promptUser(){
     addNew("Employee");
   } else if(answers.actions === "Delete a department"){
     console.log(`Deleting your department...`);
+    deleteValueFrom("Department");
   } else if(answers.actions === "Delete a role"){
     console.log(`Deleteing your role...`);
+    deleteValueFrom("Role");
   } else if(answers.actions === "Delete an employee"){
     console.log(`Deleting your employee...`);
+    deleteValueFrom("Employee");
   } else if(answers.actions === "Update an employee's role"){
     console.log(`Updating your employee's role`);
   } else if(answers.actions === "Exit"){
