@@ -145,13 +145,13 @@ async function deleteValueFrom(tableName){
       const confirmation = await inquirer.prompt([
         {
           type: 'list',
-          name: 'answer',
+          name: 'confirm',
           message: `Are you sure you want to remove the ${answer.department} department from the database?`,
           choices: ['Yes', 'No']
         }
       ]);
 
-      if (confirmation.answer === 'Yes'){
+      if (confirmation.confirm === 'Yes'){
         const query = `DELETE FROM Department WHERE name = $1`;
         await db.query(query, [answer.department]);
         console.log(`Department "${answer.department}" successfully from the database!`);
@@ -173,13 +173,13 @@ async function deleteValueFrom(tableName){
       const confirmation = await inquirer.prompt([
         {
           type: 'list',
-          name: 'answer',
+          name: 'confirm',
           message: `Are you sure you want to remove the ${answer.role} role from the database?`,
           choices: ['Yes', 'No']
         }
       ]);
 
-      if (confirmation.answer === 'Yes'){
+      if (confirmation.confirm === 'Yes'){
         const query = `DELETE FROM Role WHERE name = $1`;
         await db.query(query, [answer.role]);
         console.log(`Role "${answer.role}" successfully removed from the database!`);
@@ -201,15 +201,15 @@ async function deleteValueFrom(tableName){
       const confirmation = await inquirer.prompt([
         {
           type: 'list',
-          name: 'answer',
+          name: 'confirm',
           message: `Are you sure you want to remove ${answer.employee} from the datbase`,
           choices: ['Yes', 'No']
         }
       ]);
 
-      if (confirmation.answer === 'Yes'){
+      if (confirmation.confirm === 'Yes'){
         const [first_name, last_name] = answer.employee.split(' ');
-        const query = `DELETE FrOM Employee 
+        const query = `DELETE FROM Employee 
         WHERE first_name = $1 AND last_name = $2
         `;
         await db.query(query, [first_name, last_name]);
@@ -218,6 +218,57 @@ async function deleteValueFrom(tableName){
     }
   } catch (err){
     console.log(`Error removing from the ${tableName} table: ` +err.message);
+  }
+  promptUser();
+}
+
+async function updateEmployeeRole(){
+  try{
+    const table = `SELECT first_name, last_name FROM Employee`;
+    const result = await db.query(table);
+    const employees = result.rows.map(row => `${row.first_name} ${row.last_name}`);
+
+    if (employees.length === 0){
+      console.log("No employees found to update.");
+      promptUser();
+    }
+    const table2 = `SELECT name FROM Role`;
+    const result2 = await db.query(table2);
+    const roles = result2.rows.map(row => `${row.name}`);
+    const answer = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'employee',
+        message: "Whose role would you like to update?",
+        choices: employees
+      },
+      {
+        type: 'list',
+        name: 'newRole',
+        message: `What role would you like this employee to have?`,
+        choices: roles
+      }
+    ]);
+
+    const confirmation = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'confirm',
+        message: `Are you sure you want to update ${answer.employee}'s role to ${answer.newRole}?`,
+        choices: ['Yes', 'No']
+      }
+    ]);
+
+    if (confirmation.confirm === 'Yes'){
+      const [firstName, lastName] = answer.employee.split(' ');
+      const query = `SELECT id FROM Role WHERE name = $1`;
+      const roleID = await db.query(query, [answer.newRole]);
+      const mainQuery = `UPDATE Employee SET role_id = $1 WHERE first_name = $2 AND last_name = $3`;
+      await db.query(mainQuery, [roleID.rows[0].id, firstName, lastName]);
+      console.log(`Employee ${answer.employee}'s role updated to ${answer.newRole} successfully!`);
+    }
+  } catch (err){
+    console.log(`Error updating employee's role: ` +err.message);
   }
   promptUser();
 }
@@ -273,6 +324,7 @@ async function promptUser(){
     deleteValueFrom("Employee");
   } else if(answers.actions === "Update an employee's role"){
     console.log(`Updating your employee's role`);
+    updateEmployeeRole();
   } else if(answers.actions === "Exit"){
     console.log(`Exiting prompt...`);
     db.end();

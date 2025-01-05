@@ -1,19 +1,20 @@
 # StaffRecords Database
 
 ## Description
-
+staff-records-DB is a project built with Node.js that uses inquirer and pg. It includes a 11 prompts the user can use to alter or interact with the staffrecords database.
 
 ## Installation
-
+ 1. Ensure that you have the latest version of Node installed (v20.18.0 at the time of writing this).
+ 2. On this code's repository click on code and click "download ZIP." 
+ 3. Once downloaded enter a terminal and cd into the file path you downloaded the ZIP in.
+ 4. Type "node index.mjs" 
 
 ## Usage
+After following the installation instructions, the user will be meet with 11 prompts they can choose from. To view a table select one of the "View all ___" option. To add to a table select one of the three "Add a(n) ___" options. To remove a value from one of the three tables, select one of the three "Delete a(n) ___". If you wish to update an employee's role select the "Update an employee's role" option. If you want to exit the prompt select "Exit".
+
+For further instruction on how to use this project please view the following video:
 
 
-## Tests
- 1. Started by making a simple inquirer prompt function that console logged the choosen action.
- 2. Seeded the tables and created a function called "selectTable" that selects the choosen table from the database and displays it in the console. To test, I added the function in the prompt function where the user chooses to view the tables.
- 3. Created a function called "addNew" that adds a new value to the selected table by prompting the user for input. To test the function I added the function in the prompt function where the user chose to add a new value to a table and added test values into each table.
- 4. Created a function called "deleteValueFrom" that prompts the user to choose a value to delete from their choosen table. Tested by putting the function inside the "promptUser" function and deleting the test values used in bullet three.
 
 ## Contributors
 N/A
