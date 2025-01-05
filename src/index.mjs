@@ -47,7 +47,7 @@ async function selectTable(tableName){
       });
       console.log(`\nData from table "${tableName}"`);
       console.table(res.rows);
-     } else{
+     } else if (tableName === "Department" || tableName === "Role"){
       const query = `SELECT * FROM ${tableName}`;
       const res = await db.query(query);
       console.log(`\nData from table "${tableName}"`);
@@ -101,7 +101,7 @@ async function addNew(tableName){
         VALUES ((SELECT COALESCE(MAX(id), 0) + 1 FROM Role), $1, $2, $3)
       `;
       await db.query(query, [answer.roleName, answer.salary, answer.departmentId]);
-      console.log(`Successfully added the ${answer.roleName} ROle to the database!`);
+      console.log(`Successfully added the ${answer.roleName} Role to the database!`);
     } else if (tableName === "Employee"){
       const answer = await inquirer.prompt([
         {
@@ -117,7 +117,7 @@ async function addNew(tableName){
         {
           type: 'input',
           name: 'roleId',
-          message: "Enter the employee's role id,"
+          message: "Enter the employee's role id."
         },
         {
           type: 'input',
@@ -246,7 +246,7 @@ async function updateEmployeeRole(){
 
     if (employees.length === 0){
       console.log("No employees found to update.");
-      promptUser();
+      return promptUser();
     }
     const table2 = `SELECT name FROM Role`;
     const result2 = await db.query(table2);
@@ -338,7 +338,7 @@ async function promptUser(){
     updateEmployeeRole();
   } else if(answers.actions === "Exit"){
     console.log(`Exiting prompt...`);
-    db.end();
+    await db.end();
   }
 }
 
