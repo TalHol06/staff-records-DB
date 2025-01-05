@@ -27,19 +27,47 @@ async function fetchTable(){
     );
     console.log("Available tables:");
     console.table(res.rows);
-    promptUser();
+    promptUser();;
   } catch (err){
     console.log("Error fetching tables: " +err.message);
   }
 }
 
+/* Functions */
+
 // Displays the choosen table to the user
 async function selectTable(tableName){
   try{
-  const query = `SELECT * FROM ${tableName}`;
-  const res = await db.query(query);
-  console.log(`\nData from table "${tableName}"`);
-  console.table(res.rows);
+    // Logs a joined table if the user chooses to view the Employee table
+     if (tableName === "Employee"){
+      const query = `
+        SELECT
+        e.id AS employee_id,
+        e.first_name,
+        e.last_name,
+        r.name AS role_name,
+        r.salary,
+        d.name AS department_name,
+        m.first_name AS manager_first_name,
+        m.last_name AS manager_last_name
+        FROM Employee e LEFT JOIN Role r ON e.role_id = r.id
+        LEFT JOIN Department d ON r.department = d.id
+        LEFT JOIN Employee m ON e.manager_id = m.id
+      `;
+      const res = await db.query(query);
+      res.rows.forEach(row => {
+        row.first_name = row.first_name.trim();
+        row.last_name = row.last_name.trim();
+      });
+      console.log(`\nData from table "${tableName}"`);
+      console.table(res.rows);
+     } else{
+      const query = `SELECT * FROM ${tableName}`;
+      const res = await db.query(query);
+      console.log(`\nData from table "${tableName}"`);
+      console.table(res.rows);
+     }
+  
   } catch (err){
     console.log(`Error selecting table ${tableName}: ` +err.message);
   }
@@ -222,10 +250,12 @@ async function deleteValueFrom(tableName){
   promptUser();
 }
 
+// Allows the user to update an employee's role
 async function updateEmployeeRole(){
   try{
     const table = `SELECT first_name, last_name FROM Employee`;
     const result = await db.query(table);
+    // Creates an array of employees by first name and last name
     const employees = result.rows.map(row => `${row.first_name} ${row.last_name}`);
 
     if (employees.length === 0){
@@ -234,6 +264,7 @@ async function updateEmployeeRole(){
     }
     const table2 = `SELECT name FROM Role`;
     const result2 = await db.query(table2);
+    // Creates an array of roles 
     const roles = result2.rows.map(row => `${row.name}`);
     const answer = await inquirer.prompt([
       {
@@ -262,6 +293,7 @@ async function updateEmployeeRole(){
     if (confirmation.confirm === 'Yes'){
       const [firstName, lastName] = answer.employee.split(' ');
       const query = `SELECT id FROM Role WHERE name = $1`;
+      // Creates an object that can be used to get the id of the choosen role
       const roleID = await db.query(query, [answer.newRole]);
       const mainQuery = `UPDATE Employee SET role_id = $1 WHERE first_name = $2 AND last_name = $3`;
       await db.query(mainQuery, [roleID.rows[0].id, firstName, lastName]);
@@ -330,3 +362,5 @@ async function promptUser(){
     db.end();
   }
 }
+
+/* Functions */
