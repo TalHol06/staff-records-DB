@@ -16,22 +16,8 @@ db.connect((err) => {
     return;
   }
   console.log("Connected to your database.")
-  fetchTable();
+  promptUser();
 });
-
-// Fetches all available tables from the database
-async function fetchTable(){
-  try{
-    const res = await db.query(
-      "SELECT table_name FROM information_schema.tables WHERE table_schema = 'pubic'"
-    );
-    console.log("Available tables:");
-    console.table(res.rows);
-    promptUser();;
-  } catch (err){
-    console.log("Error fetching tables: " +err.message);
-  }
-}
 
 /* Functions */
 
@@ -337,25 +323,18 @@ async function promptUser(){
     console.log(`Loading the "Employee" table...`);
     selectTable("Employee");
   } else if(answers.actions === "Add a department"){
-    console.log(`Adding your department...`);
     addNew("Department");
   } else if(answers.actions === "Add a role"){
-    console.log(`Adding your role...`);
     addNew("Role");
   } else if(answers.actions === "Add an employee"){
-    console.log(`Adding your employee...`);
     addNew("Employee");
   } else if(answers.actions === "Delete a department"){
-    console.log(`Deleting your department...`);
     deleteValueFrom("Department");
   } else if(answers.actions === "Delete a role"){
-    console.log(`Deleteing your role...`);
     deleteValueFrom("Role");
   } else if(answers.actions === "Delete an employee"){
-    console.log(`Deleting your employee...`);
     deleteValueFrom("Employee");
   } else if(answers.actions === "Update an employee's role"){
-    console.log(`Updating your employee's role`);
     updateEmployeeRole();
   } else if(answers.actions === "Exit"){
     console.log(`Exiting prompt...`);
